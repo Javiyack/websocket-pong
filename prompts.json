@@ -59,5 +59,25 @@
             "milestones",
             "project management"
         ]
+    },
+    {
+        "id": "prompt_7",
+        "title": "User stories and tasks",
+        "description": "Define las historias de usuario y las tareas del proyecto. Esto debe incluir una descripción clara de las funcionalidades desde la perspectiva del usuario final, así como las tareas específicas que se deben realizar para implementar cada historia de usuario. Organiza las historias dentro de los sprints definidos anteriormente para asegurar un desarrollo estructurado y eficiente.",
+        "tags": [
+            "user stories",
+            "tasks",
+            "project management"
+        ]
+    },
+    {
+        "id": "prompt_8",
+        "title": "Running sprints",
+        "description": "Ejecuta los sprints definidos anteriormente, implementando ordenadamente las historias de usuario y tareas planificadas, realizando commit y push de los cambios realizados en cada historia de usuario.",
+        "tags": [
+            "sprints",
+            "progress tracking",
+            "project management"
+        ]
     }
 ]
