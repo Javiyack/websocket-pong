@@ -26,7 +26,14 @@ export class Renderer {
   }
 
   resize(): void {
-    const parent = this.canvas.parentElement!;
+    const parent = this.canvas.parentElement;
+    if (!parent) {
+      // Canvas not yet in DOM — use logical dimensions
+      this.scale = 1;
+      this.canvas.width = CANVAS_WIDTH;
+      this.canvas.height = CANVAS_HEIGHT;
+      return;
+    }
     const maxW = parent.clientWidth;
     const maxH = parent.clientHeight;
     const ratio = CANVAS_WIDTH / CANVAS_HEIGHT;

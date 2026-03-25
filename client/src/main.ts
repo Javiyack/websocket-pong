@@ -8,8 +8,6 @@ const wsUrl =
 
 const client = new WebSocketClient(wsUrl);
 
-client.connect();
-
 const app = document.getElementById("app")!;
 
 // Show loading until connected
@@ -35,3 +33,6 @@ client.on("close", () => {
   // Only auto-reconnect if not intentionally disconnected
   tryReconnect();
 });
+
+// Connect AFTER registering listeners to avoid race condition
+client.connect();
