@@ -1,10 +1,7 @@
 import { WebSocketClient } from "./network/WebSocketClient.js";
 import { ScreenManager } from "./screens/ScreenManager.js";
 
-const wsUrl =
-  location.protocol === "https:"
-    ? `wss://${location.host}`
-    : `ws://${location.hostname}:3000`;
+const wsUrl = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}`;
 
 const client = new WebSocketClient(wsUrl);
 

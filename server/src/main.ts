@@ -15,10 +15,13 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 const app = express();
 const server = createServer(app);
 
-// Serve static client build in production
+// Serve static client build in production and fallback to index.html
 if (process.env.NODE_ENV === "production") {
-  const clientDist = path.join(__dirname, "../../../dist/client");
+  const clientDist = path.join(process.cwd(), "dist", "client");
   app.use(express.static(clientDist));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
 }
 
 const roomManager = new RoomManager();
