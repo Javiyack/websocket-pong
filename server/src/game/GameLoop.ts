@@ -1,6 +1,6 @@
-import { GameState, PlayerRole } from "@shared/types.js";
-import { GAME_CONFIG } from "@shared/constants.js";
-import { ServerMessage } from "@shared/messages.js";
+import { GameState, PlayerRole } from "../../../shared/types.js";
+import { GAME_CONFIG } from "../../../shared/constants.js";
+import { ServerMessage } from "../../../shared/messages.js";
 import { movePaddle, updateBall, createInitialState } from "./Physics.js";
 import { checkScoring } from "./Scoring.js";
 

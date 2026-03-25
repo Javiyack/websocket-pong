@@ -1,5 +1,5 @@
-import { GameState, PlayerRole } from "@shared/types.js";
-import { GAME_CONFIG } from "@shared/constants.js";
+import { GameState, PlayerRole } from "../../../shared/types.js";
+import { GAME_CONFIG } from "../../../shared/constants.js";
 import { resetBall } from "./Physics.js";
 
 export interface ScoreResult {

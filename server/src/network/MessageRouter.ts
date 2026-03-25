@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { ClientMessage } from "@shared/messages.js";
+import { ClientMessage } from "../../../shared/messages.js";
 import { RoomManager } from "../rooms/RoomManager.js";
 import { validateMessage } from "../validation/MessageValidator.js";
 import { RateLimiter } from "./RateLimiter.js";

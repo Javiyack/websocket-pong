@@ -1,5 +1,5 @@
-import { GameState } from "@shared/types.js";
-import { GAME_CONFIG } from "@shared/constants.js";
+import { GameState } from "../../../shared/types.js";
+import { GAME_CONFIG } from "../../../shared/constants.js";
 
 const {
   CANVAS_WIDTH,

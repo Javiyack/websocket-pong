@@ -1,6 +1,7 @@
 {
   "name": "websocket-pong",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Classic retro Pong game with WebSocket multiplayer",
   "scripts": {

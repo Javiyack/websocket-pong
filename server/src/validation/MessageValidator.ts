@@ -1,4 +1,4 @@
-import { ClientMessage } from "@shared/messages.js";
+import { ClientMessage } from "../../../shared/messages.js";
 
 const VALID_TYPES = new Set(["join", "input", "rematch"]);
 const VALID_DIRECTIONS = new Set(["up", "down", "stop"]);

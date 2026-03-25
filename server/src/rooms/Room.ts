@@ -1,6 +1,6 @@
 import { WebSocket } from "ws";
-import { PlayerRole } from "@shared/types.js";
-import { ServerMessage } from "@shared/messages.js";
+import { PlayerRole } from "../../../shared/types.js";
+import { ServerMessage } from "../../../shared/messages.js";
 import { GameLoop } from "../game/GameLoop.js";
 
 export type RoomStatus = "waiting" | "playing" | "finished" | "destroyed";
