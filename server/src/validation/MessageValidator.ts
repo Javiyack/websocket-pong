@@ -2,6 +2,7 @@ import { ClientMessage } from "../../../shared/messages.js";
 
 const VALID_TYPES = new Set(["join", "input", "rematch"]);
 const VALID_DIRECTIONS = new Set(["up", "down", "stop"]);
+const VALID_DIFFICULTIES = new Set(["easy", "normal", "hard"]);
 const MAX_ROOM_CODE_LENGTH = 6;
 
 export function validateMessage(raw: string): ClientMessage | null {
@@ -34,7 +35,16 @@ export function validateMessage(raw: string): ClientMessage | null {
           return null;
         }
       }
-      return { type: "join", roomCode: obj.roomCode as string | undefined };
+      if (obj.difficulty !== undefined) {
+        if (typeof obj.difficulty !== "string" || !VALID_DIFFICULTIES.has(obj.difficulty)) {
+          return null;
+        }
+      }
+      return {
+        type: "join",
+        roomCode: obj.roomCode as string | undefined,
+        difficulty: (obj.difficulty as "easy" | "normal" | "hard" | undefined),
+      };
     }
     case "input": {
       if (typeof obj.direction !== "string" || !VALID_DIRECTIONS.has(obj.direction)) {

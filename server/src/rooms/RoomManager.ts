@@ -1,4 +1,5 @@
 import { Room } from "./Room.js";
+import { Difficulty } from "../../../shared/constants.js";
 
 const AMBIGUOUS_CHARS = new Set(["0", "O", "1", "l", "I"]);
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -18,9 +19,9 @@ export class RoomManager {
     this.cleanupTimer = setInterval(() => this.cleanup(), CLEANUP_INTERVAL);
   }
 
-  createRoom(playerId: string): Room {
+  createRoom(playerId: string, difficulty: Difficulty = "normal"): Room {
     const code = this.generateCode();
-    const room = new Room(code);
+    const room = new Room(code, difficulty);
     this.rooms.set(code, room);
     this.playerRoomMap.set(playerId, code);
     return room;

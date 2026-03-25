@@ -1,5 +1,5 @@
 import { GameState, PlayerRole } from "../../../shared/types.js";
-import { GAME_CONFIG } from "../../../shared/constants.js";
+import { GAME_CONFIG, DifficultyConfig, DIFFICULTY_SETTINGS } from "../../../shared/constants.js";
 import { resetBall } from "./Physics.js";
 
 export interface ScoreResult {
@@ -9,9 +9,9 @@ export interface ScoreResult {
   winner?: PlayerRole;
 }
 
-export function checkScoring(state: GameState): ScoreResult {
+export function checkScoring(state: GameState, dc: DifficultyConfig = DIFFICULTY_SETTINGS.normal): ScoreResult {
   const ball = state.ball;
-  const { CANVAS_WIDTH, WINNING_SCORE } = GAME_CONFIG;
+  const { CANVAS_WIDTH } = GAME_CONFIG;
 
   let scorer: PlayerRole | undefined;
 
@@ -27,12 +27,12 @@ export function checkScoring(state: GameState): ScoreResult {
 
   state.score[scorer]++;
 
-  const gameOver = state.score[scorer] >= WINNING_SCORE;
+  const gameOver = state.score[scorer] >= dc.winningScore;
 
   if (gameOver) {
     state.status = "finished";
   } else {
-    resetBall(state);
+    resetBall(state, dc);
     state.status = "scored";
   }
 

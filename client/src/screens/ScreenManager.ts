@@ -3,7 +3,7 @@ import { Renderer } from "../rendering/Renderer.js";
 import { StateInterpolator } from "../rendering/StateInterpolator.js";
 import { InputHandler } from "../input/InputHandler.js";
 import { GameState, PlayerRole } from "@shared/types.js";
-import { GAME_CONFIG } from "@shared/constants.js";
+import { GAME_CONFIG, Difficulty } from "@shared/constants.js";
 
 export type Screen = "lobby" | "waiting" | "game" | "result";
 
@@ -24,6 +24,7 @@ export class ScreenManager {
   private winner: PlayerRole | null = null;
   private finalScore: { player1: number; player2: number } | null = null;
   private waitingRematch = false;
+  private selectedDifficulty: Difficulty = "normal";
 
   constructor(client: WebSocketClient, app: HTMLElement) {
     this.client = client;
@@ -45,6 +46,7 @@ export class ScreenManager {
   private setupNetworkHandlers(): void {
     this.client.on("waiting", (msg: any) => {
       this.roomCode = msg.roomCode;
+      this.selectedDifficulty = msg.difficulty || "normal";
       this.transition("waiting");
     });
 
@@ -113,6 +115,29 @@ export class ScreenManager {
       <div style="text-align:center;font-family:'Press Start 2P',monospace;color:#fff">
         <h1 style="font-size:48px;margin-bottom:40px;letter-spacing:8px">PONG</h1>
         <p style="font-size:10px;margin-bottom:30px;color:#888">Multiplayer WebSocket</p>
+        <div style="margin-bottom:30px">
+          <p style="font-size:10px;margin-bottom:12px;color:#888">DIFICULTAD</p>
+          <div id="difficulty-selector" style="display:inline-flex;gap:0">
+            <button class="diff-btn" data-diff="easy" style="
+              font-family:'Press Start 2P',monospace;font-size:10px;
+              padding:10px 16px;cursor:pointer;
+              background:#000;color:#888;border:2px solid #555;
+              border-right:1px solid #555;
+            ">FÁCIL</button>
+            <button class="diff-btn" data-diff="normal" style="
+              font-family:'Press Start 2P',monospace;font-size:10px;
+              padding:10px 16px;cursor:pointer;
+              background:#fff;color:#000;border:2px solid #fff;
+              border-left:1px solid #fff;border-right:1px solid #fff;
+            ">NORMAL</button>
+            <button class="diff-btn" data-diff="hard" style="
+              font-family:'Press Start 2P',monospace;font-size:10px;
+              padding:10px 16px;cursor:pointer;
+              background:#000;color:#888;border:2px solid #555;
+              border-left:1px solid #555;
+            ">DIFÍCIL</button>
+          </div>
+        </div>
         <button id="btn-create" style="
           font-family:'Press Start 2P',monospace;font-size:14px;
           padding:15px 30px;margin:10px;cursor:pointer;
@@ -136,8 +161,25 @@ export class ScreenManager {
       </div>
     `;
 
+    // Difficulty selector logic
+    const diffButtons = document.querySelectorAll<HTMLButtonElement>(".diff-btn");
+    const updateDiffButtons = () => {
+      diffButtons.forEach((btn) => {
+        const isSelected = btn.dataset.diff === this.selectedDifficulty;
+        btn.style.background = isSelected ? "#fff" : "#000";
+        btn.style.color = isSelected ? "#000" : "#888";
+        btn.style.borderColor = isSelected ? "#fff" : "#555";
+      });
+    };
+    diffButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.selectedDifficulty = btn.dataset.diff as Difficulty;
+        updateDiffButtons();
+      });
+    });
+
     document.getElementById("btn-create")!.addEventListener("click", () => {
-      this.client.send({ type: "join" });
+      this.client.send({ type: "join", difficulty: this.selectedDifficulty });
     });
 
     document.getElementById("btn-join")!.addEventListener("click", () => {
@@ -157,11 +199,13 @@ export class ScreenManager {
 
   private showWaiting(): void {
     const shareUrl = `${window.location.origin}${window.location.pathname}?room=${this.roomCode}`;
+    const diffLabel = this.selectedDifficulty === "easy" ? "FÁCIL" : this.selectedDifficulty === "hard" ? "DIFÍCIL" : "NORMAL";
 
     this.app.innerHTML = `
       <div style="text-align:center;font-family:'Press Start 2P',monospace;color:#fff">
         <p style="font-size:12px;margin-bottom:20px;color:#888">CÓDIGO DE SALA</p>
-        <p id="room-code" style="font-size:48px;letter-spacing:12px;margin-bottom:30px">${this.roomCode}</p>
+        <p id="room-code" style="font-size:48px;letter-spacing:12px;margin-bottom:20px">${this.roomCode}</p>
+        <p style="font-size:10px;margin-bottom:30px;color:#888">DIFICULTAD: ${diffLabel}</p>
         <p class="blink" style="font-size:12px;margin-bottom:30px">Esperando oponente...</p>
         <button id="btn-copy" style="
           font-family:'Press Start 2P',monospace;font-size:10px;

@@ -1,5 +1,5 @@
 import { GameState, PlayerRole } from "../../../shared/types.js";
-import { GAME_CONFIG } from "../../../shared/constants.js";
+import { GAME_CONFIG, Difficulty, DifficultyConfig, DIFFICULTY_SETTINGS } from "../../../shared/constants.js";
 import { ServerMessage } from "../../../shared/messages.js";
 import { movePaddle, updateBall, createInitialState } from "./Physics.js";
 import { checkScoring } from "./Scoring.js";
@@ -16,10 +16,12 @@ export class GameLoop {
   private inputQueue = new Map<string, { role: PlayerRole; direction: "up" | "down" | "stop" }>();
   private callbacks: GameLoopCallbacks;
   private scoreResumeTimer: ReturnType<typeof setTimeout> | null = null;
+  private dc: DifficultyConfig;
 
-  constructor(callbacks: GameLoopCallbacks) {
+  constructor(callbacks: GameLoopCallbacks, difficulty: Difficulty = "normal") {
     this.callbacks = callbacks;
-    this.state = createInitialState();
+    this.dc = DIFFICULTY_SETTINGS[difficulty];
+    this.state = createInitialState(this.dc);
     this.countdownTicks = GAME_CONFIG.COUNTDOWN_SECONDS * GAME_CONFIG.TICK_RATE;
   }
 
@@ -56,13 +58,13 @@ export class GameLoop {
 
       // Process inputs
       for (const [, input] of this.inputQueue) {
-        movePaddle(this.state, input.role, input.direction, dt);
+        movePaddle(this.state, input.role, input.direction, dt, this.dc);
       }
 
       if (this.state.status === "playing") {
-        updateBall(this.state, dt);
+        updateBall(this.state, dt, this.dc);
 
-        const result = checkScoring(this.state);
+        const result = checkScoring(this.state, this.dc);
         if (result.scored && result.scorer) {
           this.callbacks.broadcast({
             type: "score",
@@ -106,7 +108,7 @@ export class GameLoop {
 
   reset(): void {
     this.stop();
-    this.state = createInitialState();
+    this.state = createInitialState(this.dc);
     this.tick = 0;
     this.countdownTicks = GAME_CONFIG.COUNTDOWN_SECONDS * GAME_CONFIG.TICK_RATE;
     this.inputQueue.clear();

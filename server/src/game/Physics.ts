@@ -1,5 +1,5 @@
 import { GameState } from "../../../shared/types.js";
-import { GAME_CONFIG } from "../../../shared/constants.js";
+import { GAME_CONFIG, DifficultyConfig, DIFFICULTY_SETTINGS } from "../../../shared/constants.js";
 
 const {
   CANVAS_WIDTH,
@@ -14,6 +14,8 @@ const {
   PADDLE_SPEED,
 } = GAME_CONFIG;
 
+const DEFAULT_CONFIG = DIFFICULTY_SETTINGS.normal;
+
 /**
  * Pure physics module — receives state, mutates and returns it.
  * No side effects or dependencies on Room/WebSocket.
@@ -23,20 +25,23 @@ export function movePaddle(
   state: GameState,
   paddle: "player1" | "player2",
   direction: "up" | "down" | "stop",
-  dt: number
+  dt: number,
+  dc: DifficultyConfig = DEFAULT_CONFIG
 ): void {
   const p = state.paddles[paddle];
-  const speed = PADDLE_SPEED * dt * GAME_CONFIG.TICK_RATE;
+  const speed = PADDLE_SPEED * dc.paddleSpeedMultiplier * dt * GAME_CONFIG.TICK_RATE;
+  const paddleH = PADDLE_HEIGHT * dc.paddleHeightMultiplier;
 
   if (direction === "up") {
     p.y = Math.max(0, p.y - speed);
   } else if (direction === "down") {
-    p.y = Math.min(CANVAS_HEIGHT - PADDLE_HEIGHT, p.y + speed);
+    p.y = Math.min(CANVAS_HEIGHT - paddleH, p.y + speed);
   }
 }
 
-export function updateBall(state: GameState, _dt: number): void {
+export function updateBall(state: GameState, _dt: number, dc: DifficultyConfig = DEFAULT_CONFIG): void {
   const ball = state.ball;
+  const paddleH = PADDLE_HEIGHT * dc.paddleHeightMultiplier;
 
   // Move ball
   ball.x += ball.vx;
@@ -58,12 +63,12 @@ export function updateBall(state: GameState, _dt: number): void {
     ball.vx < 0 &&
     ball.x <= p1x + PADDLE_WIDTH &&
     ball.y + BALL_SIZE >= p1.y &&
-    ball.y <= p1.y + PADDLE_HEIGHT
+    ball.y <= p1.y + paddleH
   ) {
     ball.x = p1x + PADDLE_WIDTH;
     ball.vx = -ball.vx;
-    applyBounceAngle(ball, p1.y);
-    accelerateBall(ball);
+    applyBounceAngle(ball, p1.y, paddleH, dc);
+    accelerateBall(ball, dc);
   }
 
   // Paddle collision — Player 2 (right)
@@ -73,55 +78,60 @@ export function updateBall(state: GameState, _dt: number): void {
     ball.vx > 0 &&
     ball.x + BALL_SIZE >= p2x &&
     ball.y + BALL_SIZE >= p2.y &&
-    ball.y <= p2.y + PADDLE_HEIGHT
+    ball.y <= p2.y + paddleH
   ) {
     ball.x = p2x - BALL_SIZE;
     ball.vx = -ball.vx;
-    applyBounceAngle(ball, p2.y);
-    accelerateBall(ball);
+    applyBounceAngle(ball, p2.y, paddleH, dc);
+    accelerateBall(ball, dc);
   }
 }
 
 function applyBounceAngle(
   ball: GameState["ball"],
-  paddleY: number
+  paddleY: number,
+  paddleH: number,
+  dc: DifficultyConfig
 ): void {
   const relativeHit =
-    (ball.y + BALL_SIZE / 2 - (paddleY + PADDLE_HEIGHT / 2)) /
-    (PADDLE_HEIGHT / 2);
-  ball.vy = relativeHit * BALL_INITIAL_SPEED;
+    (ball.y + BALL_SIZE / 2 - (paddleY + paddleH / 2)) /
+    (paddleH / 2);
+  ball.vy = relativeHit * BALL_INITIAL_SPEED * dc.ballSpeedMultiplier;
 }
 
-function accelerateBall(ball: GameState["ball"]): void {
+function accelerateBall(ball: GameState["ball"], dc: DifficultyConfig): void {
   const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-  const newSpeed = Math.min(speed + BALL_SPEED_INCREMENT, BALL_MAX_SPEED);
+  const newSpeed = Math.min(speed + BALL_SPEED_INCREMENT * dc.ballSpeedMultiplier, BALL_MAX_SPEED * dc.ballSpeedMultiplier);
   const factor = newSpeed / speed;
   ball.vx *= factor;
   ball.vy *= factor;
 }
 
-export function resetBall(state: GameState): void {
+export function resetBall(state: GameState, dc: DifficultyConfig = DEFAULT_CONFIG): void {
   const dirX = Math.random() > 0.5 ? 1 : -1;
   const dirY = (Math.random() - 0.5) * 2;
   const mag = Math.sqrt(1 + dirY * dirY);
+  const ballSpeed = BALL_INITIAL_SPEED * dc.ballSpeedMultiplier;
 
   state.ball = {
     x: (CANVAS_WIDTH - BALL_SIZE) / 2,
     y: (CANVAS_HEIGHT - BALL_SIZE) / 2,
-    vx: (BALL_INITIAL_SPEED * dirX) / mag,
-    vy: (BALL_INITIAL_SPEED * dirY) / mag,
+    vx: (ballSpeed * dirX) / mag,
+    vy: (ballSpeed * dirY) / mag,
   };
 }
 
-export function createInitialState(): GameState {
-  const paddleY = (CANVAS_HEIGHT - PADDLE_HEIGHT) / 2;
+export function createInitialState(dc: DifficultyConfig = DEFAULT_CONFIG): GameState {
+  const paddleH = PADDLE_HEIGHT * dc.paddleHeightMultiplier;
+  const paddleY = (CANVAS_HEIGHT - paddleH) / 2;
   const dirX = Math.random() > 0.5 ? 1 : -1;
+  const ballSpeed = BALL_INITIAL_SPEED * dc.ballSpeedMultiplier;
 
   return {
     ball: {
       x: (CANVAS_WIDTH - BALL_SIZE) / 2,
       y: (CANVAS_HEIGHT - BALL_SIZE) / 2,
-      vx: BALL_INITIAL_SPEED * dirX,
+      vx: ballSpeed * dirX,
       vy: 0,
     },
     paddles: {

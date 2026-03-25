@@ -1,5 +1,6 @@
 import { WebSocket } from "ws";
 import { ClientMessage } from "../../../shared/messages.js";
+import { Difficulty } from "../../../shared/constants.js";
 import { RoomManager } from "../rooms/RoomManager.js";
 import { validateMessage } from "../validation/MessageValidator.js";
 import { RateLimiter } from "./RateLimiter.js";
@@ -41,7 +42,7 @@ export class MessageRouter {
   private dispatch(ws: WebSocket, playerId: string, message: ClientMessage): void {
     switch (message.type) {
       case "join":
-        this.handleJoin(ws, playerId, message.roomCode);
+        this.handleJoin(ws, playerId, message.roomCode, message.difficulty);
         break;
       case "input":
         this.handleInput(playerId, message.direction);
@@ -52,7 +53,7 @@ export class MessageRouter {
     }
   }
 
-  private handleJoin(ws: WebSocket, playerId: string, roomCode?: string): void {
+  private handleJoin(ws: WebSocket, playerId: string, roomCode?: string, difficulty?: Difficulty): void {
     // Already in a room?
     const existingRoom = this.roomManager.getRoomByPlayer(playerId);
     if (existingRoom) {
@@ -76,16 +77,16 @@ export class MessageRouter {
 
       // Notify both players
       for (const p of room.players) {
-        p.ws.send(JSON.stringify({ type: "start", role: p.role }));
+        p.ws.send(JSON.stringify({ type: "start", role: p.role, difficulty: room.difficulty }));
       }
 
       // Start the game
       room.startGameLoop();
     } else {
       // Create new room
-      const room = this.roomManager.createRoom(playerId);
+      const room = this.roomManager.createRoom(playerId, difficulty || "normal");
       const role = room.addPlayer(ws, playerId);
-      ws.send(JSON.stringify({ type: "waiting", roomCode: room.code }));
+      ws.send(JSON.stringify({ type: "waiting", roomCode: room.code, difficulty: room.difficulty }));
     }
   }
 
@@ -103,7 +104,7 @@ export class MessageRouter {
     if (allReady) {
       // Notify both players
       for (const p of room.players) {
-        p.ws.send(JSON.stringify({ type: "start", role: p.role }));
+        p.ws.send(JSON.stringify({ type: "start", role: p.role, difficulty: room.difficulty }));
       }
       room.startGameLoop();
     }

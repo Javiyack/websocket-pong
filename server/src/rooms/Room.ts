@@ -1,5 +1,6 @@
 import { WebSocket } from "ws";
 import { PlayerRole } from "../../../shared/types.js";
+import { Difficulty } from "../../../shared/constants.js";
 import { ServerMessage } from "../../../shared/messages.js";
 import { GameLoop } from "../game/GameLoop.js";
 
@@ -17,11 +18,13 @@ export class Room {
   public players: PlayerConnection[] = [];
   public lastActivity: number = Date.now();
   public rematchVotes = new Set<string>();
+  public difficulty: Difficulty;
 
   private gameLoop: GameLoop | null = null;
 
-  constructor(code: string) {
+  constructor(code: string, difficulty: Difficulty = "normal") {
     this.code = code;
+    this.difficulty = difficulty;
   }
 
   addPlayer(ws: WebSocket, playerId: string): PlayerRole | null {
@@ -80,7 +83,7 @@ export class Room {
 
     this.gameLoop = new GameLoop({
       broadcast: (msg) => this.broadcast(msg),
-    });
+    }, this.difficulty);
 
     this.gameLoop.start();
   }
