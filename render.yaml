@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: websocket-pong
+    runtime: node
+    branch: main
+    plan: free
+    buildCommand: npm ci && npm ci --prefix client && npm ci --prefix server && npm run build
+    startCommand: node dist/server/src/main.js
+    envVars:
+      - key: NODE_ENV
+        value: production

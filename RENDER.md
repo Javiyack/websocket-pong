@@ -40,24 +40,10 @@ node dist/server/src/main.js
 
 Render inyecta `PORT` automáticamente: el servidor usa `process.env.PORT` (ver `server/src/main.ts`).
 
-## Archivo `render.yaml` (opcional)
-Puedes añadir un `render.yaml` en la raíz para configurar el servicio automáticamente. Ejemplo mínimo:
+## Archivo `render.yaml`
+El repositorio incluye un `render.yaml` en la raíz que configura el servicio automáticamente en Render (Infrastructure as Code). Este archivo define el build command, start command y variables de entorno. Al conectar el repo en Render, detectará este archivo y aplicará la configuración.
 
-```yaml
-services:
-  - type: web_service
-    name: websocket-pong
-    env: node
-    branch: main
-    plan: free
-    buildCommand: bash -lc "npm ci && npm ci --prefix client && npm ci --prefix server && npm run build"
-    startCommand: node dist/server/src/main.js
-    envVars:
-      - key: NODE_ENV
-        value: production
-```
-
-Asegúrate de validar la sintaxis del `render.yaml` con la documentación de Render antes de usarlo.
+> **Importante**: el `buildCommand` del `render.yaml` ejecuta `npm ci` en la raíz del proyecto para instalar `express` y `ws` (dependencias runtime del servidor) antes de compilar. Esto es necesario porque el servidor compilado se ejecuta desde `dist/server/src/main.js` (en la raíz), y ESM resuelve paquetes desde la ubicación del archivo, no desde `server/node_modules`.
 
 ## Verificación local rápida
 1. Instalar deps y hacer build:
