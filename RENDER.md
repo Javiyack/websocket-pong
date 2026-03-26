@@ -18,7 +18,7 @@ Usaremos comandos que construyen ambos subproyectos y luego ejecutan el servidor
 Build (en Render o localmente):
 
 ```bash
-bash -lc "npm ci --prefix client && npm ci --prefix server && npm run build"
+bash -lc "npm ci && npm ci --prefix client && npm ci --prefix server && npm run build"
 ```
 
 Start command (Render):
@@ -50,7 +50,7 @@ services:
     env: node
     branch: main
     plan: free
-    buildCommand: bash -lc "npm ci --prefix client && npm ci --prefix server && npm run build"
+    buildCommand: bash -lc "npm ci && npm ci --prefix client && npm ci --prefix server && npm run build"
     startCommand: node dist/server/src/main.js
     envVars:
       - key: NODE_ENV
